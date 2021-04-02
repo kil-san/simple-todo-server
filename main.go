@@ -1,0 +1,35 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/kil-san/simple-todo-server/controller"
+	"github.com/kil-san/simple-todo-server/factory"
+	"github.com/kil-san/simple-todo-server/handler"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	log "unknwon.dev/clog/v2"
+)
+
+func main() {
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	repoFactory := factory.NewRepoFactory()
+	todoHandler := handler.NewTodoHandler(repoFactory)
+	err := log.NewConsole()
+	if err != nil {
+		panic("unable to create new logger: " + err.Error())
+	}
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("welcome"))
+	})
+
+	todoController := controller.NewTodoController(todoHandler)
+	r.Mount("/todos", todoController.Routes())
+
+	fmt.Printf("Server running at localhost:8000\n")
+	http.ListenAndServe(":8000", r)
+}
