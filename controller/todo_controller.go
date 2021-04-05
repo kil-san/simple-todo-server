@@ -37,6 +37,8 @@ func (c *todoController) Routes() chi.Router {
 
 	r.Get("/{todoID}", c.Get)
 	r.Post("/", c.Post)
+	r.Put("/{todoID}", c.Update)
+	r.Delete("/{todoID}", c.Delete)
 
 	return r
 }
@@ -60,7 +62,7 @@ func (c *todoController) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(response)
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(status)
 }
 
 func (c *todoController) Post(w http.ResponseWriter, r *http.Request) {
@@ -89,5 +91,54 @@ func (c *todoController) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(status)
+}
+
+func (c *todoController) Update(w http.ResponseWriter, r *http.Request) {
+	var todo model.Todo
+	rawBody, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(rawBody))
+	todoID := chi.URLParam(r, "todoID")
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+
+	err = json.Unmarshal(rawBody, &todo)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err, status := c.handler.Update(ctx, todoID, todo)
+	if err != nil {
+		w.WriteHeader(status)
+		return
+	}
+
+	w.WriteHeader(status)
+}
+
+func (c *todoController) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+	todoID := chi.URLParam(r, "todoID")
+
+	_, err := strconv.ParseInt(todoID, 10, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err, status := c.handler.Delete(ctx, todoID)
+	if err != nil {
+		w.WriteHeader(status)
+		return
+	}
+
+	w.WriteHeader(status)
 }

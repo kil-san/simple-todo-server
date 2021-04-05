@@ -60,3 +60,37 @@ func (h TodoHandler) Get(ctx context.Context, id string) ([]byte, error, int) {
 
 	return response, err, http.StatusOK
 }
+
+func (h TodoHandler) Update(ctx context.Context, id string, todo model.Todo) (error, int) {
+	db, err := connection.NewSqliteConnection("sqlite.db")
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	defer db.Close()
+	repo := h.repoFactory.CreateSqlRepo(db)
+	svc := service.NewTodoService(repo)
+
+	err = svc.UpdateTodo(ctx, id, todo)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+
+	return nil, http.StatusOK
+}
+
+func (h TodoHandler) Delete(ctx context.Context, id string) (error, int) {
+	db, err := connection.NewSqliteConnection("sqlite.db")
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+	defer db.Close()
+	repo := h.repoFactory.CreateSqlRepo(db)
+	svc := service.NewTodoService(repo)
+
+	err = svc.DeleteTodo(ctx, id)
+	if err != nil {
+		return err, http.StatusInternalServerError
+	}
+
+	return err, http.StatusOK
+}
