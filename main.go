@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/kil-san/simple-todo-server/connection"
 	"github.com/kil-san/simple-todo-server/controller"
 	"github.com/kil-san/simple-todo-server/factory"
 	"github.com/kil-san/simple-todo-server/handler"
@@ -16,9 +17,15 @@ import (
 func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	db, err := connection.NewSqliteConnection("sqlite.db")
+	if err != nil {
+		panic("could not open connection to db")
+	}
+	defer db.Close()
 	repoFactory := factory.NewRepoFactory()
-	todoHandler := handler.NewTodoHandler(repoFactory)
-	err := log.NewConsole()
+	todoHandler := handler.NewTodoHandler(db, repoFactory)
+
+	err = log.NewConsole()
 	if err != nil {
 		panic("unable to create new logger: " + err.Error())
 	}

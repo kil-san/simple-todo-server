@@ -19,6 +19,8 @@ type TodoController interface {
 	Routes() chi.Router
 	Get(w http.ResponseWriter, r *http.Request)
 	Post(w http.ResponseWriter, r *http.Request)
+	Update(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request)
 }
 
 type todoController struct {
@@ -56,13 +58,13 @@ func (c *todoController) Get(w http.ResponseWriter, r *http.Request) {
 
 	response, err, status := c.handler.Get(ctx, todoID)
 	if err != nil {
-		w.Write([]byte(err.Error()))
 		w.WriteHeader(status)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
-	w.Write(response)
 	w.WriteHeader(status)
+	w.Write(response)
 }
 
 func (c *todoController) Post(w http.ResponseWriter, r *http.Request) {
@@ -86,8 +88,8 @@ func (c *todoController) Post(w http.ResponseWriter, r *http.Request) {
 
 	err, status := c.handler.Create(ctx, todo)
 	if err != nil {
-		w.Write([]byte(err.Error()))
 		w.WriteHeader(status)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
