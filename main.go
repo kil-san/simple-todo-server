@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/kil-san/simple-todo-server/connection"
-	"github.com/kil-san/simple-todo-server/controller"
 	"github.com/kil-san/simple-todo-server/factory"
 	"github.com/kil-san/simple-todo-server/handler"
 
@@ -34,8 +33,7 @@ func main() {
 		w.Write([]byte("welcome"))
 	})
 
-	todoController := controller.NewTodoController(todoHandler)
-	r.Mount("/todos", todoController.Routes())
+	r.Mount("/todos", todoHandler.Routes())
 
 	fmt.Printf("Server running at localhost:8000\n")
 	http.ListenAndServe(":8000", r)

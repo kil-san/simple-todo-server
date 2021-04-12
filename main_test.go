@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/kil-san/simple-todo-server/connection"
-	"github.com/kil-san/simple-todo-server/controller"
 	"github.com/kil-san/simple-todo-server/factory"
 	"github.com/kil-san/simple-todo-server/handler"
 )
@@ -36,9 +35,8 @@ func setup() (*chi.Mux, *sql.DB, error) {
 
 	repoFactory := factory.NewRepoFactory()
 	todoHandler := handler.NewTodoHandler(db, repoFactory)
-	todoController := controller.NewTodoController(todoHandler)
 	r = chi.NewRouter()
-	r.Mount("/todos", todoController.Routes())
+	r.Mount("/todos", todoHandler.Routes())
 
 	return r, db, nil
 }
